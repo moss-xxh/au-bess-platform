@@ -204,8 +204,20 @@ function renderSidebar(role, theme) {
 function toggleMobileMenu() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('mobile-overlay');
+  const isOpening = sidebar.classList.contains('-translate-x-full');
   sidebar.classList.toggle('-translate-x-full');
   if (overlay) overlay.classList.toggle('hidden');
+
+  // 移动端打开菜单时暂停 ECharts 渲染以节省内存
+  if (typeof marketChart !== 'undefined' && marketChart) {
+    if (isOpening) {
+      // 菜单打开 → 暂停图表动画
+      marketChart.setOption({ animation: false });
+    } else {
+      // 菜单关闭 → 恢复动画
+      marketChart.setOption({ animation: true });
+    }
+  }
 }
 
 function closeMobileMenu() {
@@ -321,6 +333,7 @@ function renderStationCard(station, theme, isOwner) {
       <p class="text-sm font-bold font-mono ${station.revenue_today >= 0 ? 'text-emerald-400' : 'text-red-400'} revenue-tick" data-revenue="${station.id}">
         ${station.revenue_today >= 0 ? '' : '-'}A$${Math.abs(station.revenue_today).toFixed(2)}
       </p>
+      <p class="text-xs text-slate-600 mt-0.5">${getTrans('efficiency_label')}: ${(station.efficiency * 100).toFixed(0)}%</p>
     </div>
   ` : '';
 

@@ -206,13 +206,13 @@ const TRANSLATIONS = {
 // ============ 语言管理 ============
 
 function initLang() {
-  if (!localStorage.getItem('lang')) {
-    try {
-      // Phase 2: 默认英文
-      localStorage.setItem('lang', 'en');
-    } catch (e) {
-      localStorage.setItem('lang', 'en');
-    }
+  // Phase 2: 强制默认英文，确保演示第一眼为英文
+  // 用户手动切换后通过 switchLang 存储，下次加载仍尊重手动选择
+  const VERSION_KEY = 'lang_version';
+  const CURRENT_VERSION = '2'; // 递增此值可强制重置所有用户语言
+  if (localStorage.getItem(VERSION_KEY) !== CURRENT_VERSION) {
+    localStorage.setItem('lang', 'en');
+    localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
   }
 }
 

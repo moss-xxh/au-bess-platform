@@ -6,11 +6,13 @@
  */
 
 // ============ 仿真状态 ============
-let simTime = new Date(); // 仿真时钟（用真实时间驱动电价时段）
+let simTime = new Date();
 let simInterval = null;
 let currentPrice = 100;   // $/MWh
+let previousPrice = 100;  // 上一轮电价（用于平滑）
 let priceHistory = [];     // [{time, price, powers: {st_01: MW, ...}}]
 const MAX_HISTORY = 12;    // 保留 1 小时（12 × 5 分钟）
+const SMOOTHING_FACTOR = 0.3; // 平滑系数：0=完全沿用旧价, 1=完全用新价
 
 // ============ 电价模型 ============
 
@@ -121,17 +123,42 @@ function runAutoBidder(station, price) {
  */
 function simTick() {
   const hour = new Date().getHours();
-  // 使用澳洲东部时间偏移（UTC+10/+11），这里简单用本地 +2 模拟
-  // Demo: 直接用服务器时间，也可手动偏移
-  currentPrice = generatePrice(hour);
+  const rawPrice = generatePrice(hour);
+
+  // 平滑处理：新价格 = 旧价格 × (1-α) + 原始新价格 × α
+  // 尖峰价格（>$3000）不平滑，保持冲击力
+  if (rawPrice > 3000) {
+    currentPrice = rawPrice;
+  } else {
+    currentPrice = previousPrice * (1 - SMOOTHING_FACTOR) + rawPrice * SMOOTHING_FACTOR;
+  }
+  previousPrice = currentPrice;
 
   const powers = {};
 
   // 对所有已分配的电站执行套利
+  // 尖峰时强制触发放电判断（绕过普通阈值）
+  const isSpike = currentPrice > 3000;
+
   stations.forEach(station => {
     if (station.operator_id !== 'unassigned') {
-      const result = runAutoBidder(station, currentPrice);
-      powers[station.id] = result.power;
+      if (isSpike && station.soc > 5) {
+        // 尖峰强制放电
+        const cap = parseCapacity(station.capacity);
+        const intervalHours = 5 / 60;
+        const energyMWh = cap.mw * intervalHours;
+        const socDecrease = (energyMWh / cap.mwh) * 100;
+        station.soc = Math.max(5, station.soc - socDecrease);
+        station.status = 'DISCHARGING';
+        const revenue = energyMWh * currentPrice * station.efficiency;
+        station.revenue_today = (station.revenue_today || 0) + revenue;
+        station.cumulative_mwh = (station.cumulative_mwh || 0) + energyMWh;
+        station.soh = Math.max(0, station.soh - energyMWh * 0.001);
+        powers[station.id] = cap.mw;
+      } else {
+        const result = runAutoBidder(station, currentPrice);
+        powers[station.id] = result.power;
+      }
     } else {
       powers[station.id] = 0;
     }
