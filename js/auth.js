@@ -171,9 +171,9 @@ const TRANSLATIONS = {
     no_stations_hint: 'Contact the asset owner for access',
 
     // View toggle
-    view_map: 'Satellite Map',
+    view_map: 'Asset Map',
     view_cards: 'Asset Cards',
-    view_list: 'Data List',
+    view_list: 'Asset List',
     add_station: 'Add Station',
     add_device: 'Add Device',
     station_name: 'Station Name',
@@ -381,9 +381,9 @@ const TRANSLATIONS = {
     no_stations_hint: '请联系资产业主获取权限',
 
     // 视图切换
-    view_map: '卫星地图',
+    view_map: '资产分布图',
     view_cards: '资产卡片',
-    view_list: '数据列表',
+    view_list: '资产列表',
     add_station: '添加电站',
     add_device: '添加设备',
     station_name: '电站名称',

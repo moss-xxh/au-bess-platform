@@ -145,7 +145,7 @@ function renderViewToggle(theme, isOwner) {
   if (!container) return;
 
   const modes = [
-    { id: 'map', icon: 'satellite', labelKey: 'view_map' },
+    { id: 'map', icon: 'map-pin', labelKey: 'view_map' },
     { id: 'cards', icon: 'layout-grid', labelKey: 'view_cards' },
     { id: 'list', icon: 'list', labelKey: 'view_list' }
   ];
