@@ -50,6 +50,21 @@ const TRANSLATIONS = {
     owner_subtitle: 'Manage your energy storage portfolio',
     operator_subtitle: 'Your assigned stations',
 
+    // Simulation
+    soc: 'SoC',
+    status_idle: 'Idle',
+    status_charging: 'Charging',
+    status_discharging: 'Discharging',
+    revenue_today: "Today's Revenue",
+    market_price: 'Market Price',
+    power_output: 'Power Output',
+    market_chart_title: 'NEM Spot Price & Station Output (5-min)',
+    price_spike_alert: 'PRICE SPIKE',
+    efficiency_label: 'Round-trip Eff.',
+    charging: 'Charging',
+    discharging: 'Discharging',
+    idle: 'Standby',
+
     // Station card
     capacity: 'Capacity',
     soh: 'SoH',
@@ -133,6 +148,21 @@ const TRANSLATIONS = {
     owner_subtitle: '管理您的储能资产组合',
     operator_subtitle: '您负责运维的电站',
 
+    // 仿真
+    soc: '荷电状态',
+    status_idle: '待机',
+    status_charging: '充电中',
+    status_discharging: '放电中',
+    revenue_today: '今日收益',
+    market_price: '市场电价',
+    power_output: '输出功率',
+    market_chart_title: 'NEM 现货电价与电站出力 (5分钟)',
+    price_spike_alert: '电价尖峰',
+    efficiency_label: '往返效率',
+    charging: '充电中',
+    discharging: '放电中',
+    idle: '待机',
+
     // 电站卡片
     capacity: '额定容量',
     soh: '健康度',
@@ -178,8 +208,8 @@ const TRANSLATIONS = {
 function initLang() {
   if (!localStorage.getItem('lang')) {
     try {
-      const browserLang = (typeof navigator !== 'undefined' && (navigator.language || navigator.userLanguage)) || 'en';
-      localStorage.setItem('lang', browserLang.startsWith('zh') ? 'zh' : 'en');
+      // Phase 2: 默认英文
+      localStorage.setItem('lang', 'en');
     } catch (e) {
       localStorage.setItem('lang', 'en');
     }
@@ -249,7 +279,8 @@ const DEFAULT_STATIONS = [
     location: 'Newcastle, NSW',
     lease_start: '2025-01-01',
     lease_end: '2028-12-31',
-    annual_fee: 850000
+    annual_fee: 850000,
+    soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0
   },
   {
     id: 'st_02',
@@ -261,7 +292,8 @@ const DEFAULT_STATIONS = [
     location: 'Geelong, VIC',
     lease_start: '2024-06-01',
     lease_end: '2027-05-31',
-    annual_fee: 420000
+    annual_fee: 420000,
+    soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0
   },
   {
     id: 'st_03',
@@ -273,7 +305,8 @@ const DEFAULT_STATIONS = [
     location: 'Sunshine Coast, QLD',
     lease_start: '2025-02-15',
     lease_end: '2030-02-14',
-    annual_fee: 1200000
+    annual_fee: 1200000,
+    soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0
   },
   {
     id: 'st_04',
@@ -285,7 +318,8 @@ const DEFAULT_STATIONS = [
     location: 'Adelaide, SA',
     lease_start: '-',
     lease_end: '-',
-    annual_fee: 0
+    annual_fee: 0,
+    soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0
   }
 ];
 

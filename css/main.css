@@ -173,6 +173,27 @@ input[type="checkbox"] {
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
+/* ============ 收益数字跳动 ============ */
+.revenue-tick {
+  animation: revenueTick 0.3s ease-out;
+}
+
+@keyframes revenueTick {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* ============ 尖峰边框闪烁 ============ */
+.spike-border {
+  animation: spikeBorder 0.5s ease-in-out 3;
+}
+
+@keyframes spikeBorder {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.1); }
+  50% { border-color: rgba(239, 68, 68, 0.8); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+}
+
 /* ============ 响应式：移动端 ============ */
 @media (max-width: 768px) {
   .sidebar-panel {
