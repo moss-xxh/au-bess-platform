@@ -87,6 +87,13 @@ const TRANSLATIONS = {
     switch_role: 'Switch Role',
     login_success_owner: 'Login successful. Entering as Owner...',
     login_success_operator: 'Login successful. Entering as Operator...',
+    select_role: 'Select Your Role',
+    select_role_hint: 'Choose how you want to access the platform',
+    role_owner_title: 'Owner',
+    role_owner_desc: 'Monitor assets, review operator performance, track SoH',
+    role_operator_title: 'Operator',
+    role_operator_desc: 'Manage dispatch strategy, optimize revenue',
+    role_select_as: 'Continue as',
 
     // Reports
     export_csv: 'Export CSV',
@@ -245,6 +252,13 @@ const TRANSLATIONS = {
     switch_role: '切换角色',
     login_success_owner: '登录成功，正在以管理员身份进入系统...',
     login_success_operator: '登录成功，正在以操作员身份进入系统...',
+    select_role: '选择您的角色',
+    select_role_hint: '选择您要以何种身份进入平台',
+    role_owner_title: '业主',
+    role_owner_desc: '监控资产、审查运维方绩效、跟踪电池健康',
+    role_operator_title: '运维方',
+    role_operator_desc: '管理调度策略、优化收益',
+    role_select_as: '以此身份进入',
 
     // 报表
     export_csv: '导出 CSV',
