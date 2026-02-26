@@ -52,7 +52,7 @@ const TRANSLATIONS = {
 
     // KPI
     kpi_total_cap: 'Total Capacity',
-    kpi_month_rev: 'Est. Monthly Rev',
+    kpi_month_rev: 'Monthly Rental',
     kpi_avg_soh: 'Average SoH',
     kpi_unassigned: 'Unassigned',
     kpi_managed_cap: 'Managed Cap.',
@@ -262,7 +262,7 @@ const TRANSLATIONS = {
 
     // KPI
     kpi_total_cap: '总资产容量',
-    kpi_month_rev: '本月预估收入',
+    kpi_month_rev: '月租金收入',
     kpi_avg_soh: '平均健康度',
     kpi_unassigned: '待分配',
     kpi_managed_cap: '管理容量',

@@ -84,13 +84,21 @@ function initDashboard() {
   renderSidebar(role, theme);
   renderHeader(role, theme);
   renderKPI(role, theme);
-  renderMarketBanner();
+
+  if (isOwner) {
+    // 业主：不显示市场电价，显示资产健康概览
+    renderOwnerPortfolioBanner();
+  } else {
+    // 运维：保留市场电价横幅 + 图表
+    renderMarketBanner();
+    if (typeof initChart === 'function') initChart();
+  }
+
   renderViewToggle(theme, isOwner);
   applyStationView(theme, isOwner);
   closeMobileMenu();
 
-  // 初始化图表和仿真
-  if (typeof initChart === 'function') initChart();
+  // 仿真引擎：始终启动（运维需要实时电价，业主也需要间接收益计算）
   if (typeof startSimulator === 'function') startSimulator();
 }
 
@@ -107,8 +115,12 @@ function onSimUpdate(price, history) {
   // 更新 KPI
   updateKPI(role, theme, price);
 
-  // 更新市场横幅
-  updateMarketBanner(price);
+  // 运维：更新市场横幅；业主：更新资产概览
+  if (isOwner) {
+    updateOwnerPortfolioBanner();
+  } else {
+    updateMarketBanner(price);
+  }
 
   // 更新电站卡片（不重建DOM，只更新数值）
   updateStationCards(theme, isOwner);
@@ -817,16 +829,18 @@ function renderKPI(role, theme) {
     const totalCapMW = stations.reduce((s, st) => s + parseCapacity(st.capacity).mw, 0);
     const totalCapMWh = stations.reduce((s, st) => s + parseCapacity(st.capacity).mwh, 0);
     const avgSoh = stations.length > 0 ? stations.reduce((s, st) => s + st.soh, 0) / stations.length : 0;
-    const todayRev = stations.reduce((s, st) => s + (st.revenue_today || 0), 0);
-    const monthRev = todayRev * 30;
+    const totalAnnualFee = stations.reduce((s, st) => s + (st.annual_fee || 0), 0);
+    const monthRev = totalAnnualFee / 12;
     const unassignedCount = stations.filter(s => s.operator_id === 'unassigned').length;
+    const leasedCount = stations.filter(s => s.operator_id !== 'unassigned').length;
+    const rentalRate = stations.length > 0 ? ((leasedCount / stations.length) * 100).toFixed(0) : 0;
 
     container.innerHTML = `
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         ${kpiCard(getTrans('kpi_total_cap'), `${totalCapMW}MW / ${totalCapMWh}MWh`, 'battery-charging', theme.accent)}
-        ${kpiCard(getTrans('kpi_month_rev'), `~A$${Math.abs(monthRev).toFixed(0)}`, 'trending-up', monthRev >= 0 ? 'text-emerald-400' : 'text-red-400', 'kpi-month-rev')}
-        ${kpiCard(getTrans('kpi_avg_soh'), `${avgSoh.toFixed(4)}%`, 'heart-pulse', avgSoh > 99 ? 'text-emerald-400' : 'text-amber-400', 'kpi-avg-soh')}
-        ${kpiCard(getTrans('kpi_unassigned'), `${unassignedCount} station${unassignedCount !== 1 ? 's' : ''}`, 'alert-circle', unassignedCount > 0 ? 'text-amber-400' : 'text-emerald-400')}
+        ${kpiCard(getTrans('kpi_month_rev'), `A$${Math.round(monthRev).toLocaleString('en-AU')}`, 'wallet', 'text-blue-400', 'kpi-month-rev')}
+        ${kpiCard(getTrans('kpi_avg_soh'), `${avgSoh.toFixed(2)}%`, 'heart-pulse', avgSoh > 99 ? 'text-emerald-400' : 'text-amber-400', 'kpi-avg-soh')}
+        ${kpiCard(getTrans('kpi_unassigned'), `${unassignedCount} / ${rentalRate}%`, 'alert-circle', unassignedCount > 0 ? 'text-amber-400' : 'text-emerald-400')}
       </div>
     `;
   } else {
@@ -867,11 +881,9 @@ function updateKPI(role, theme, price) {
 
   if (isOwner) {
     const avgSoh = stations.length > 0 ? stations.reduce((s, st) => s + st.soh, 0) / stations.length : 0;
-    const todayRev = stations.reduce((s, st) => s + (st.revenue_today || 0), 0);
-    const el1 = document.getElementById('kpi-month-rev');
     const el2 = document.getElementById('kpi-avg-soh');
-    if (el1) el1.textContent = `~A$${Math.abs(todayRev * 30).toFixed(0)}`;
-    if (el2) el2.textContent = `${avgSoh.toFixed(4)}%`;
+    if (el2) el2.textContent = `${avgSoh.toFixed(2)}%`;
+    // 月租金是固定值，不需要每 tick 更新
   } else {
     const todayRev = myStations.reduce((s, st) => s + (st.revenue_today || 0), 0);
     const avgSoc = myStations.length > 0 ? myStations.reduce((s, st) => s + st.soc, 0) / myStations.length : 0;
@@ -882,6 +894,62 @@ function updateKPI(role, theme, price) {
     if (el2) el2.textContent = `${avgSoc.toFixed(1)}%`;
     if (el3) { el3.textContent = `$${price.toFixed(2)}`; el3.className = `text-lg md:text-xl font-bold font-mono ${price > 200 ? 'text-amber-400' : 'text-emerald-400'} revenue-tick`; }
   }
+}
+
+// ============ 业主资产概览横幅 ============
+
+function renderOwnerPortfolioBanner() {
+  const banner = document.getElementById('market-banner');
+  if (!banner) return;
+
+  const totalStations = stations.length;
+  const leasedCount = stations.filter(s => s.operator_id !== 'unassigned').length;
+  const rentalRate = totalStations > 0 ? ((leasedCount / totalStations) * 100).toFixed(0) : 0;
+  const avgSoh = totalStations > 0 ? stations.reduce((s, st) => s + st.soh, 0) / totalStations : 0;
+  const totalAnnualFee = stations.reduce((s, st) => s + (st.annual_fee || 0), 0);
+  const monthlyRev = totalAnnualFee / 12;
+
+  banner.innerHTML = `
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="heart-pulse" class="w-5 h-5 text-emerald-400"></i>
+          <span class="text-xs text-slate-400 uppercase tracking-wider">Portfolio Health</span>
+        </div>
+        <p id="owner-avg-soh" class="text-2xl font-bold font-mono text-emerald-400">${avgSoh.toFixed(2)}%</p>
+        <p class="text-xs text-slate-500 mt-1">Average SoH across ${totalStations} stations</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="building-2" class="w-5 h-5 text-amber-400"></i>
+          <span class="text-xs text-slate-400 uppercase tracking-wider">Asset Rental Rate</span>
+        </div>
+        <p id="owner-rental-rate" class="text-2xl font-bold font-mono text-amber-400">${rentalRate}%</p>
+        <p class="text-xs text-slate-500 mt-1">${leasedCount} / ${totalStations} stations leased</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="wallet" class="w-5 h-5 text-blue-400"></i>
+          <span class="text-xs text-slate-400 uppercase tracking-wider">Monthly Rental Income</span>
+        </div>
+        <p id="owner-monthly-rev" class="text-2xl font-bold font-mono text-blue-400">A$${Math.round(monthlyRev).toLocaleString('en-AU')}</p>
+        <p class="text-xs text-slate-500 mt-1">Annual: ${formatAUD(totalAnnualFee)}</p>
+      </div>
+    </div>
+  `;
+  if (window.lucide) lucide.createIcons();
+}
+
+function updateOwnerPortfolioBanner() {
+  const totalStations = stations.length;
+  const leasedCount = stations.filter(s => s.operator_id !== 'unassigned').length;
+  const rentalRate = totalStations > 0 ? ((leasedCount / totalStations) * 100).toFixed(0) : 0;
+  const avgSoh = totalStations > 0 ? stations.reduce((s, st) => s + st.soh, 0) / totalStations : 0;
+
+  const el1 = document.getElementById('owner-avg-soh');
+  const el2 = document.getElementById('owner-rental-rate');
+  if (el1) el1.textContent = avgSoh.toFixed(2) + '%';
+  if (el2) el2.textContent = rentalRate + '%';
 }
 
 // ============ 市场横幅 ============
