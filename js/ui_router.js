@@ -475,6 +475,32 @@ function renderDetailOverview(station, theme, isOwner) {
     : station.status === 'DISCHARGING' ? getTrans('discharging')
     : getTrans('idle');
 
+  // 容量对比告警
+  const capCheck = checkCapacityMismatch(station);
+  let capacityCompare = '';
+  if (capCheck) {
+    const mismatchClass = capCheck.mismatch ? 'border-red-500/50' : 'border-white/10';
+    capacityCompare = `
+      <div class="bg-white/5 border ${mismatchClass} rounded-xl p-4 mt-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-slate-400 uppercase tracking-wider">${getTrans('capacity')} Check</span>
+          ${capCheck.mismatch ? `<span class="text-xs text-red-400 font-medium animate-pulse">${getTrans('capacity_mismatch')}</span>` : '<span class="text-xs text-emerald-400 font-medium">✓ Match</span>'}
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white/5 rounded-lg p-3">
+            <p class="text-xs text-slate-500">${getTrans('contract_capacity')}</p>
+            <p class="text-sm font-bold font-mono text-white">${capCheck.contract_mw}MW / ${capCheck.contract_mwh}MWh</p>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3">
+            <p class="text-xs text-slate-500">${getTrans('live_capacity')}</p>
+            <p class="text-sm font-bold font-mono ${capCheck.mismatch ? 'text-red-400' : 'text-emerald-400'}">${capCheck.live_mw}MW / ${capCheck.live_mwh}MWh</p>
+          </div>
+        </div>
+        ${capCheck.mismatch ? `<p class="text-xs text-red-400 mt-2">Deviation: ${capCheck.deviation_pct}% — please verify device configuration</p>` : ''}
+      </div>
+    `;
+  }
+
   // 业主视角：隐藏控制按钮；运维视角：显示策略面板
   const strategySection = isOwner ? '' : `
     <div class="mt-6">
@@ -505,6 +531,7 @@ function renderDetailOverview(station, theme, isOwner) {
             </div>
           ` : ''}
         </div>
+        ${capacityCompare}
         ${strategySection}
       </div>
       <!-- 右：能量流动画 -->
@@ -643,6 +670,35 @@ function openAddStationModal() {
           <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('station_name')}</label>
           <input id="new-st-name" type="text" required placeholder="e.g. Perth BESS Alpha" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
         </div>
+
+        <!-- 核心设备 (先填设备，再同步参数) -->
+        <div class="bg-white/[0.03] border border-white/5 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <label class="text-sm text-slate-300 font-medium">Core Device</label>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">${getTrans('device_type')}</label>
+              <select id="new-st-dev-type" class="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50">
+                <option value="PCS">PCS</option>
+                <option value="BMS">BMS</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">${getTrans('rated_power')} (MW)</label>
+              <input id="new-st-dev-mw" type="number" step="0.5" min="0.1" value="5" class="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">${getTrans('rated_capacity')} (MWh)</label>
+              <input id="new-st-dev-mwh" type="number" step="1" min="1" value="10" class="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"/>
+            </div>
+          </div>
+          <button onclick="syncFromDevice()" class="w-full py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-xs text-blue-400 hover:bg-blue-500/20 transition-colors flex items-center justify-center gap-1.5">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            ${getTrans('sync_from_device')}
+          </button>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('power_mw')}</label>
@@ -689,6 +745,18 @@ function closeAddStationModal() {
   if (modal) modal.remove();
 }
 
+function syncFromDevice() {
+  const devMW = parseFloat(document.getElementById('new-st-dev-mw').value);
+  const devMWh = parseFloat(document.getElementById('new-st-dev-mwh').value);
+  if (!devMW || !devMWh) {
+    showToast(getTrans('sync_no_device'), 'warning');
+    return;
+  }
+  document.getElementById('new-st-mw').value = devMW;
+  document.getElementById('new-st-mwh').value = devMWh;
+  showToast(getTrans('sync_success') + `: ${devMW}MW / ${devMWh}MWh`, 'success');
+}
+
 function onTzChange() {
   const sel = document.getElementById('new-st-tz');
   const opt = sel.options[sel.selectedIndex];
@@ -733,6 +801,11 @@ function handleAddStation() {
   const tzObj = AU_TIMEZONES.find(t => t.value === tz);
   const region = tzObj ? tzObj.region : '';
 
+  // 从表单获取核心设备参数
+  const devType = document.getElementById('new-st-dev-type').value;
+  const devMW = parseFloat(document.getElementById('new-st-dev-mw').value) || mw;
+  const devMWh = parseFloat(document.getElementById('new-st-dev-mwh').value) || mwh;
+
   addStation({
     name,
     capacity: `${mw}MW/${mwh}MWh`,
@@ -740,7 +813,10 @@ function handleAddStation() {
     lat, lng,
     timezone: tz,
     region,
-    devices: [{ id: 'ems-' + Date.now(), name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }]
+    devices: [
+      { id: 'ems-' + Date.now(), name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' },
+      { id: devType.toLowerCase() + '-' + Date.now(), name: devType + ' Unit 1', type: devType, version: 'v1.0.0', rated_power: devMW, rated_capacity: devMWh }
+    ]
   });
 
   closeAddStationModal();
@@ -777,7 +853,7 @@ function openAddDeviceModal(stationId) {
         </div>
         <div>
           <label class="text-sm text-slate-300 block mb-1">${getTrans('device_type')}</label>
-          <select id="new-dev-type" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50">
+          <select id="new-dev-type" onchange="toggleDeviceRatedFields()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50">
             <option value="EMS">EMS</option>
             <option value="PCS">PCS</option>
             <option value="BMS">BMS</option>
@@ -789,6 +865,16 @@ function openAddDeviceModal(stationId) {
         <div>
           <label class="text-sm text-slate-300 block mb-1">${getTrans('device_version')}</label>
           <input id="new-dev-ver" type="text" value="v1.0.0" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+        </div>
+        <div id="dev-rated-fields" class="hidden grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 block mb-1">${getTrans('rated_power')} (MW)</label>
+            <input id="new-dev-rated-mw" type="number" step="0.5" value="5" class="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"/>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 block mb-1">${getTrans('rated_capacity')} (MWh)</label>
+            <input id="new-dev-rated-mwh" type="number" step="1" value="10" class="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"/>
+          </div>
         </div>
       </div>
       <div class="flex gap-3 mt-6">
@@ -806,6 +892,16 @@ function closeAddDeviceModal() {
   if (modal) modal.remove();
 }
 
+function toggleDeviceRatedFields() {
+  const type = document.getElementById('new-dev-type').value;
+  const fields = document.getElementById('dev-rated-fields');
+  if (type === 'PCS' || type === 'BMS') {
+    fields.classList.remove('hidden');
+  } else {
+    fields.classList.add('hidden');
+  }
+}
+
 function handleAddDevice(stationId) {
   const name = document.getElementById('new-dev-name').value.trim();
   const type = document.getElementById('new-dev-type').value;
@@ -816,8 +912,18 @@ function handleAddDevice(stationId) {
     return;
   }
 
-  const deviceId = type.toLowerCase() + '-' + Date.now();
-  const ok = addDeviceToStation(stationId, { id: deviceId, name, type, version });
+  const device = { id: type.toLowerCase() + '-' + Date.now(), name, type, version };
+
+  // PCS/BMS 附加额定参数
+  if (type === 'PCS' || type === 'BMS') {
+    const ratedMW = parseFloat(document.getElementById('new-dev-rated-mw').value);
+    const ratedMWh = parseFloat(document.getElementById('new-dev-rated-mwh').value);
+    if (ratedMW) device.rated_power = ratedMW;
+    if (ratedMWh) device.rated_capacity = ratedMWh;
+  }
+
+  const deviceId = device.id;
+  const ok = addDeviceToStation(stationId, device);
 
   if (ok) {
     closeAddDeviceModal();

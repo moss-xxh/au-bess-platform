@@ -190,6 +190,14 @@ const TRANSLATIONS = {
     device_type: 'Device Type',
     device_version: 'Version',
     add_device_btn: 'Add',
+    sync_from_device: 'Sync from Device',
+    sync_success: 'Synced from device',
+    sync_no_device: 'No PCS/BMS device to sync from',
+    contract_capacity: 'Contract Capacity',
+    live_capacity: 'Live Capacity',
+    capacity_mismatch: '⚠ Capacity mismatch >5%',
+    rated_power: 'Rated Power',
+    rated_capacity: 'Rated Capacity',
     manage: 'Manage',
     monitor: 'Monitor',
     alarm: 'Alarms',
@@ -400,6 +408,14 @@ const TRANSLATIONS = {
     device_type: '设备类型',
     device_version: '版本号',
     add_device_btn: '添加',
+    sync_from_device: '从设备同步',
+    sync_success: '已从设备同步',
+    sync_no_device: '无可同步的 PCS/BMS 设备',
+    contract_capacity: '合同容量',
+    live_capacity: '实际容量',
+    capacity_mismatch: '⚠ 容量偏差超过5%',
+    rated_power: '额定功率',
+    rated_capacity: '额定容量',
     manage: '管理',
     monitor: '监控',
     alarm: '告警',
@@ -510,7 +526,8 @@ const DEFAULT_STATIONS = [
     annual_fee: 850000,
     lease_status: 'Leased',
     devices: [
-      { id: 'ems-01', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+      { id: 'ems-01', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' },
+      { id: 'pcs-01', name: 'PCS Unit 1', type: 'PCS', version: 'v2.3.1', rated_power: 5, rated_capacity: 10 }
     ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   },
@@ -531,7 +548,8 @@ const DEFAULT_STATIONS = [
     annual_fee: 420000,
     lease_status: 'Leased',
     devices: [
-      { id: 'ems-02', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+      { id: 'ems-02', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' },
+      { id: 'pcs-02', name: 'PCS Unit 1', type: 'PCS', version: 'v2.3.1', rated_power: 2.5, rated_capacity: 5 }
     ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   },
@@ -552,7 +570,8 @@ const DEFAULT_STATIONS = [
     annual_fee: 1200000,
     lease_status: 'Leased',
     devices: [
-      { id: 'ems-03', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+      { id: 'ems-03', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' },
+      { id: 'pcs-03', name: 'PCS Unit 1', type: 'PCS', version: 'v2.3.1', rated_power: 10, rated_capacity: 20 }
     ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   },
@@ -573,7 +592,8 @@ const DEFAULT_STATIONS = [
     annual_fee: 0,
     lease_status: 'Idle',
     devices: [
-      { id: 'ems-04', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+      { id: 'ems-04', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' },
+      { id: 'pcs-04', name: 'PCS Unit 1', type: 'PCS', version: 'v2.3.1', rated_power: 5, rated_capacity: 10 }
     ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   }
@@ -684,6 +704,56 @@ function addStation(stationData) {
   stations.push(newStation);
   saveStations();
   return newStation;
+}
+
+/**
+ * 从电站设备中获取主设备的额定参数
+ * @param {Array} devices
+ * @returns {{rated_power: number, rated_capacity: number}|null}
+ */
+function getDeviceRatedParams(devices) {
+  if (!devices || !devices.length) return null;
+  // 优先 PCS，其次 BMS
+  const primary = devices.find(d => d.type === 'PCS') || devices.find(d => d.type === 'BMS');
+  if (!primary || !primary.rated_power || !primary.rated_capacity) return null;
+  return { rated_power: primary.rated_power, rated_capacity: primary.rated_capacity };
+}
+
+/**
+ * 获取电站的 Live Capacity（设备实际读数）
+ * @param {object} station
+ * @returns {{live_mw: number, live_mwh: number}|null}
+ */
+function getStationLiveCapacity(station) {
+  const params = getDeviceRatedParams(station.devices);
+  if (!params) return null;
+  return { live_mw: params.rated_power, live_mwh: params.rated_capacity };
+}
+
+/**
+ * 检查合同容量与设备容量是否偏差超过阈值
+ * @param {object} station
+ * @param {number} threshold - 百分比，默认 5
+ * @returns {{mismatch: boolean, contract_mw: number, contract_mwh: number, live_mw: number, live_mwh: number, deviation_pct: number}|null}
+ */
+function checkCapacityMismatch(station, threshold) {
+  threshold = threshold || 5;
+  const contract = parseCapacity(station.capacity);
+  const live = getStationLiveCapacity(station);
+  if (!live) return null;
+
+  const devMW = Math.abs(contract.mw - live.live_mw) / contract.mw * 100;
+  const devMWh = Math.abs(contract.mwh - live.live_mwh) / contract.mwh * 100;
+  const maxDev = Math.max(devMW, devMWh);
+
+  return {
+    mismatch: maxDev > threshold,
+    contract_mw: contract.mw,
+    contract_mwh: contract.mwh,
+    live_mw: live.live_mw,
+    live_mwh: live.live_mwh,
+    deviation_pct: Math.round(maxDev * 10) / 10
+  };
 }
 
 // ============ 澳洲时区列表 ============
