@@ -83,6 +83,7 @@ const TRANSLATIONS = {
     simulated_data_hint: '* Simulated historical data for demonstration purposes',
     invalid_thresholds: 'Charge threshold must be lower than discharge threshold',
     mfa_demo_hint: 'Demo: enter any 6 digits (e.g., 123456)',
+    strategy_warning_high_reserve: 'Warning: Reserve SoC is higher than current SoC',
 
     // Reports
     export_csv: 'Export CSV',
@@ -156,7 +157,7 @@ const TRANSLATIONS = {
     menu: 'Menu',
 
     // Language
-    lang_switch: 'EN',
+    lang_switch: 'English',
     demo_accounts_hint: 'Demo accounts: admin / op_a / op_b',
   },
   zh: {
@@ -237,6 +238,7 @@ const TRANSLATIONS = {
     simulated_data_hint: '* 演示环境下的模拟历史数据',
     invalid_thresholds: '充电阈值必须低于放电阈值',
     mfa_demo_hint: '演示：请随意输入 6 位数字（如 123456）',
+    strategy_warning_high_reserve: '提醒：储备 SoC 设置高于当前实际值',
 
     // 报表
     export_csv: '导出 CSV',
@@ -310,7 +312,7 @@ const TRANSLATIONS = {
     menu: '菜单',
 
     // 语言
-    lang_switch: 'CN',
+    lang_switch: '中文',
     demo_accounts_hint: '演示账号：admin / op_a / op_b',
   }
 };

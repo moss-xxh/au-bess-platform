@@ -169,10 +169,11 @@ function initSohChart() {
   const days = 30;
   const dates = [];
   const now = new Date();
+  const langTag = getLang() === 'zh' ? 'zh-CN' : 'en-AU';
   for (let i = days; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    dates.push(d.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' }));
+    dates.push(d.toLocaleDateString(langTag, { month: 'short', day: 'numeric' }));
   }
 
   const series = stations.map((station, idx) => {

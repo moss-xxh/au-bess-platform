@@ -789,6 +789,11 @@ function saveStrategy(stationId) {
 
   closeStrategyModal();
   showToast(getTrans('strategy_saved'), 'success');
+
+  // SoC 预警：储备值高于当前实际 SoC
+  if (reserveVal > station.soc) {
+    setTimeout(() => showToast(getTrans('strategy_warning_high_reserve'), 'warning'), 500);
+  }
 }
 
 function setManualMode(stationId, mode) {
