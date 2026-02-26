@@ -637,40 +637,41 @@ function openAddStationModal() {
         <h3 class="text-lg font-bold text-white">${getTrans('add_station')}</h3>
         <button onclick="closeAddStationModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
+      <p class="text-xs text-slate-500 mb-4"><span class="text-red-400">*</span> = Required field</p>
       <div class="space-y-4">
         <div>
-          <label class="text-sm text-slate-300 block mb-1">${getTrans('station_name')}</label>
-          <input id="new-st-name" type="text" placeholder="e.g. Perth BESS Alpha" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+          <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('station_name')}</label>
+          <input id="new-st-name" type="text" required placeholder="e.g. Perth BESS Alpha" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-sm text-slate-300 block mb-1">${getTrans('power_mw')}</label>
-            <input id="new-st-mw" type="number" step="0.5" value="5" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+            <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('power_mw')}</label>
+            <input id="new-st-mw" type="number" step="0.5" min="0.1" value="5" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
           </div>
           <div>
-            <label class="text-sm text-slate-300 block mb-1">${getTrans('capacity_mwh')}</label>
-            <input id="new-st-mwh" type="number" step="1" value="10" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+            <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('capacity_mwh')}</label>
+            <input id="new-st-mwh" type="number" step="1" min="1" value="10" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
           </div>
         </div>
         <div>
-          <label class="text-sm text-slate-300 block mb-1">${getTrans('select_timezone')}</label>
-          <select id="new-st-tz" onchange="onTzChange()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50">
+          <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('select_timezone')}</label>
+          <select id="new-st-tz" required onchange="onTzChange()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50">
             ${tzOptions}
           </select>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-sm text-slate-300 block mb-1">${getTrans('latitude')}</label>
-            <input id="new-st-lat" type="number" step="0.0001" placeholder="-33.8688" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+            <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('latitude')}</label>
+            <input id="new-st-lat" type="number" step="0.0001" required placeholder="-33.8688" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
           </div>
           <div>
-            <label class="text-sm text-slate-300 block mb-1">${getTrans('longitude')}</label>
-            <input id="new-st-lng" type="number" step="0.0001" placeholder="151.2093" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+            <label class="text-sm text-slate-300 block mb-1"><span class="text-red-400">*</span> ${getTrans('longitude')}</label>
+            <input id="new-st-lng" type="number" step="0.0001" required placeholder="151.2093" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
           </div>
         </div>
         <div>
           <label class="text-sm text-slate-300 block mb-1">${getTrans('confirm_location')}</label>
-          <input id="new-st-location" type="text" placeholder="e.g. Perth, WA" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
+          <input id="new-st-location" type="text" placeholder="e.g. Perth, WA (optional)" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/50"/>
         </div>
       </div>
       <div class="flex gap-3 mt-6">
@@ -710,6 +711,22 @@ function handleAddStation() {
 
   if (!name) {
     showToast(getTrans('station_name') + ' required', 'warning');
+    return;
+  }
+  if (!lat || !lng) {
+    showToast(getTrans('latitude') + ' / ' + getTrans('longitude') + ' required', 'warning');
+    return;
+  }
+  if (!tz) {
+    showToast(getTrans('select_timezone') + ' required', 'warning');
+    return;
+  }
+  if (!mw || mw <= 0) {
+    showToast(getTrans('power_mw') + ' required', 'warning');
+    return;
+  }
+  if (!mwh || mwh <= 0) {
+    showToast(getTrans('capacity_mwh') + ' required', 'warning');
     return;
   }
 
