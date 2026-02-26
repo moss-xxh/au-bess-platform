@@ -156,7 +156,8 @@ const TRANSLATIONS = {
     menu: 'Menu',
 
     // Language
-    lang_switch: 'CN',
+    lang_switch: '中文',
+    demo_accounts_hint: 'Demo accounts: admin / op_a / op_b',
   },
   zh: {
     // 登录
@@ -309,7 +310,8 @@ const TRANSLATIONS = {
     menu: '菜单',
 
     // 语言
-    lang_switch: 'EN',
+    lang_switch: 'English',
+    demo_accounts_hint: '演示账号：admin / op_a / op_b',
   }
 };
 
