@@ -126,7 +126,7 @@
           </div>
 
           <!-- Demo Hint -->
-          <p class="text-xs text-slate-500 text-center mb-4">Demo: enter any 6 digits (e.g., 123456)</p>
+          <p id="mfa-demo-hint" class="text-xs text-slate-500 text-center mb-4">Demo: enter any 6 digits (e.g., 123456)</p>
 
           <!-- Verify Button -->
           <button id="btn-mfa" onclick="handleMFA()"
@@ -185,6 +185,7 @@
       document.getElementById('loading-text').textContent = t('loading');
       document.getElementById('footer-label').textContent = t('phase_label');
       document.getElementById('lang-btn').textContent = t('lang_switch');
+      document.getElementById('mfa-demo-hint').textContent = t('mfa_demo_hint');
     }
 
     function toggleLoginLang() {

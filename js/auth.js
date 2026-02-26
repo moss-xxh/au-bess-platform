@@ -82,6 +82,7 @@ const TRANSLATIONS = {
     soh_trend_hint: 'Battery health trajectory across all stations',
     simulated_data_hint: '* Simulated historical data for demonstration purposes',
     invalid_thresholds: 'Charge threshold must be lower than discharge threshold',
+    mfa_demo_hint: 'Demo: enter any 6 digits (e.g., 123456)',
 
     // Reports
     export_csv: 'Export CSV',
@@ -234,6 +235,7 @@ const TRANSLATIONS = {
     soh_trend_hint: '全部电站的健康度变化轨迹',
     simulated_data_hint: '* 演示环境下的模拟历史数据',
     invalid_thresholds: '充电阈值必须低于放电阈值',
+    mfa_demo_hint: '演示：请随意输入 6 位数字（如 123456）',
 
     // 报表
     export_csv: '导出 CSV',
