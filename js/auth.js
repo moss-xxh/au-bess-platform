@@ -90,9 +90,9 @@ const TRANSLATIONS = {
     select_role: 'Select Your Identity',
     select_role_hint: 'Choose how you want to access the AU BESS Platform',
     role_owner_title: 'Pacific Energy Group',
-    role_owner_desc: 'Asset holder. Responsible for global revenue auditing, operator evaluation and asset allocation.',
+    role_owner_desc: 'Control global asset returns, audit operator performance, manage station allocation. Track battery health and long-term ROI.',
     role_operator_title: 'Operator',
-    role_operator_desc: 'Regional operator. Responsible for station dispatch, pursuing optimal charge/discharge efficiency.',
+    role_operator_desc: 'Monitor station output in real-time, execute automated arbitrage strategies, optimize battery lifespan. Manage dispatch thresholds and emergency response.',
     role_select_as: 'Enter Portal',
 
     // Reports
@@ -255,9 +255,9 @@ const TRANSLATIONS = {
     select_role: '选择访问身份',
     select_role_hint: '选择您要以何种身份进入 AU BESS 平台',
     role_owner_title: 'Pacific Energy Group',
-    role_owner_desc: '资产持有者。负责全局收益审计、运维方考核及资产划转。',
+    role_owner_desc: '掌控全局资产收益，审计运维表现，管理电站分配。追踪电池健康度与长期投资回报。',
     role_operator_title: '运维方',
-    role_operator_desc: '区域运营商。负责电站调度管理，追求极致充放电效率。',
+    role_operator_desc: '实时监控电站出力，执行自动化套利策略，优化电池寿命。管理调度阈值与紧急响应。',
     role_select_as: '进入门户',
 
     // 报表

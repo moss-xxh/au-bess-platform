@@ -187,48 +187,42 @@
           <p id="role-hint" class="text-slate-400 text-base mt-2">Choose how you want to access the AU BESS Platform</p>
         </div>
 
-        <!-- 3 Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 2 Giant Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           <!-- Owner Card -->
-          <button onclick="selectRole('owner')" class="group text-left p-6 rounded-2xl border-2 border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20 hover:scale-[1.03] transition-all duration-300 cursor-pointer">
-            <div class="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-              <i data-lucide="crown" class="w-8 h-8 text-amber-400"></i>
-            </div>
-            <h3 id="role-owner-label" class="text-xl font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">Pacific Energy Group</h3>
-            <p class="text-amber-400/80 text-sm font-medium mb-3">Asset Owner</p>
-            <p id="role-owner-desc" class="text-slate-400 text-sm leading-relaxed">资产持有者。负责全局收益审计、运维方考核及资产划转。</p>
-            <div class="mt-5 flex items-center gap-2 text-amber-400/60 group-hover:text-amber-400 transition-colors">
-              <span class="text-xs font-medium">Enter Portal</span>
-              <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-            </div>
-          </button>
-
-          <!-- Operator A Card -->
-          <button onclick="selectRole('op_a')" class="group text-left p-6 rounded-2xl border-2 border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-500/20 hover:scale-[1.03] transition-all duration-300 cursor-pointer">
-            <div class="w-16 h-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-              <i data-lucide="zap" class="w-8 h-8 text-emerald-400"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">GreenGrid Energy</h3>
-            <p class="text-emerald-400/80 text-sm font-medium mb-3">Operator A</p>
-            <p id="role-opa-desc" class="text-slate-400 text-sm leading-relaxed">区域运营商 A。负责 Sydney & Brisbane 电站调度，追求极致充放电效率。</p>
-            <div class="mt-5 flex items-center gap-2 text-emerald-400/60 group-hover:text-emerald-400 transition-colors">
-              <span class="text-xs font-medium">Enter Portal</span>
-              <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          <button onclick="selectRole('owner')" class="group text-left p-8 md:p-10 rounded-3xl border-2 border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-amber-900/5 to-slate-900 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20 hover:scale-[1.05] transition-all duration-300 cursor-pointer relative overflow-hidden">
+            <!-- Glow effect -->
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-colors"></div>
+            <div class="relative">
+              <div class="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <i data-lucide="crown" class="w-10 h-10 text-amber-400"></i>
+              </div>
+              <p class="text-amber-400/80 text-sm font-semibold uppercase tracking-wider mb-2">Asset Owner</p>
+              <h3 id="role-owner-label" class="text-2xl md:text-3xl font-bold text-white mb-4 group-hover:text-amber-400 transition-colors">资产业主</h3>
+              <p id="role-owner-desc" class="text-slate-400 text-base leading-relaxed mb-8">掌控全局资产收益，审计运维表现，管理电站分配。追踪电池健康度与长期投资回报。</p>
+              <div class="flex items-center gap-3 text-amber-400/70 group-hover:text-amber-400 transition-colors">
+                <span class="text-sm font-semibold">Enter Owner Portal</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-transform"></i>
+              </div>
             </div>
           </button>
 
-          <!-- Operator B Card -->
-          <button onclick="selectRole('op_b')" class="group text-left p-6 rounded-2xl border-2 border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/20 hover:scale-[1.03] transition-all duration-300 cursor-pointer">
-            <div class="w-16 h-16 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-              <i data-lucide="activity" class="w-8 h-8 text-blue-400"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">VoltEdge Solutions</h3>
-            <p class="text-blue-400/80 text-sm font-medium mb-3">Operator B</p>
-            <p id="role-opb-desc" class="text-slate-400 text-sm leading-relaxed">区域运营商 B。负责 Melbourne 电站管理，专注于长寿命周期电池保护。</p>
-            <div class="mt-5 flex items-center gap-2 text-blue-400/60 group-hover:text-blue-400 transition-colors">
-              <span class="text-xs font-medium">Enter Portal</span>
-              <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          <!-- Operator Card -->
+          <button onclick="selectRole('op_a')" class="group text-left p-8 md:p-10 rounded-3xl border-2 border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-emerald-900/5 to-slate-900 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-500/20 hover:scale-[1.05] transition-all duration-300 cursor-pointer relative overflow-hidden">
+            <!-- Glow effect -->
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors"></div>
+            <div class="relative">
+              <div class="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <i data-lucide="zap" class="w-10 h-10 text-emerald-400"></i>
+              </div>
+              <p class="text-emerald-400/80 text-sm font-semibold uppercase tracking-wider mb-2">Operator</p>
+              <h3 class="text-2xl md:text-3xl font-bold text-white mb-4 group-hover:text-emerald-400 transition-colors">运维专家</h3>
+              <p id="role-opa-desc" class="text-slate-400 text-base leading-relaxed mb-8">实时监控电站出力，执行自动化套利策略，优化电池寿命。管理调度阈值与紧急响应。</p>
+              <div class="flex items-center gap-3 text-emerald-400/70 group-hover:text-emerald-400 transition-colors">
+                <span class="text-sm font-semibold">Enter Operator Portal</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-transform"></i>
+              </div>
             </div>
           </button>
 
@@ -431,7 +425,6 @@
       if (el('role-hint')) el('role-hint').textContent = t('select_role_hint');
       if (el('role-owner-desc')) el('role-owner-desc').textContent = t('role_owner_desc');
       if (el('role-opa-desc')) el('role-opa-desc').textContent = t('role_operator_desc');
-      if (el('role-opb-desc')) el('role-opb-desc').textContent = t('role_operator_desc');
       if (el('role-lang-btn')) el('role-lang-btn').textContent = t('lang_switch');
     }
 
