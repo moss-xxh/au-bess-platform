@@ -425,9 +425,17 @@ const DEFAULT_STATIONS = [
     soh: 99.98,
     capacity: '5MW/10MWh',
     location: 'Newcastle, NSW',
+    lat: -32.9283,
+    lng: 151.7817,
+    timezone: 'Australia/Sydney',
+    region: 'NSW',
     lease_start: '2025-01-01',
     lease_end: '2028-12-31',
     annual_fee: 850000,
+    lease_status: 'Leased',
+    devices: [
+      { id: 'ems-01', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+    ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   },
   {
@@ -438,9 +446,17 @@ const DEFAULT_STATIONS = [
     soh: 99.95,
     capacity: '2.5MW/5MWh',
     location: 'Geelong, VIC',
+    lat: -38.1499,
+    lng: 144.3617,
+    timezone: 'Australia/Melbourne',
+    region: 'VIC',
     lease_start: '2024-06-01',
     lease_end: '2027-05-31',
     annual_fee: 420000,
+    lease_status: 'Leased',
+    devices: [
+      { id: 'ems-02', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+    ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   },
   {
@@ -451,9 +467,17 @@ const DEFAULT_STATIONS = [
     soh: 99.99,
     capacity: '10MW/20MWh',
     location: 'Sunshine Coast, QLD',
+    lat: -26.6500,
+    lng: 153.0667,
+    timezone: 'Australia/Brisbane',
+    region: 'QLD',
     lease_start: '2025-02-15',
     lease_end: '2030-02-14',
     annual_fee: 1200000,
+    lease_status: 'Leased',
+    devices: [
+      { id: 'ems-03', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+    ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   },
   {
@@ -464,9 +488,17 @@ const DEFAULT_STATIONS = [
     soh: 100.0,
     capacity: '5MW/10MWh',
     location: 'Adelaide, SA',
+    lat: -34.9285,
+    lng: 138.6007,
+    timezone: 'Australia/Adelaide',
+    region: 'SA',
     lease_start: '-',
     lease_end: '-',
     annual_fee: 0,
+    lease_status: 'Idle',
+    devices: [
+      { id: 'ems-04', name: 'EMS Controller', type: 'EMS', version: 'v1.0.2' }
+    ],
     soc: 50, efficiency: 0.88, revenue_today: 0, status: 'IDLE', cumulative_mwh: 0, strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
   }
 ];
@@ -491,6 +523,103 @@ function resetStations() {
   localStorage.removeItem('stations');
   stations = JSON.parse(JSON.stringify(DEFAULT_STATIONS));
 }
+
+// ============ Station CRUD ============
+
+/**
+ * 获取单个电站
+ * @param {string} stationId
+ * @returns {object|null}
+ */
+function getStation(stationId) {
+  return stations.find(s => s.id === stationId) || null;
+}
+
+/**
+ * 更新电站字段（合并式更新）
+ * @param {string} stationId
+ * @param {object} fields - 要更新的字段键值对
+ * @returns {boolean}
+ */
+function updateStation(stationId, fields) {
+  const station = stations.find(s => s.id === stationId);
+  if (!station) return false;
+  Object.assign(station, fields);
+  saveStations();
+  return true;
+}
+
+/**
+ * 添加设备到电站
+ * @param {string} stationId
+ * @param {object} device - { id, name, type, version }
+ * @returns {boolean}
+ */
+function addDeviceToStation(stationId, device) {
+  const station = stations.find(s => s.id === stationId);
+  if (!station) return false;
+  if (!station.devices) station.devices = [];
+  // 防止重复 ID
+  if (station.devices.some(d => d.id === device.id)) return false;
+  station.devices.push(device);
+  saveStations();
+  return true;
+}
+
+/**
+ * 从电站移除设备
+ * @param {string} stationId
+ * @param {string} deviceId
+ * @returns {boolean}
+ */
+function removeDeviceFromStation(stationId, deviceId) {
+  const station = stations.find(s => s.id === stationId);
+  if (!station || !station.devices) return false;
+  const idx = station.devices.findIndex(d => d.id === deviceId);
+  if (idx === -1) return false;
+  station.devices.splice(idx, 1);
+  saveStations();
+  return true;
+}
+
+/**
+ * 添加新电站
+ * @param {object} stationData - 完整电站对象
+ * @returns {object} 新建的电站
+ */
+function addStation(stationData) {
+  const newStation = Object.assign({
+    id: 'st_' + String(stations.length + 1).padStart(2, '0'),
+    owner: 'owner_1',
+    operator_id: 'unassigned',
+    soh: 100.0,
+    lease_start: '-',
+    lease_end: '-',
+    annual_fee: 0,
+    lease_status: 'Idle',
+    devices: [],
+    soc: 50,
+    efficiency: 0.88,
+    revenue_today: 0,
+    status: 'IDLE',
+    cumulative_mwh: 0,
+    strategy: { charge_threshold: 50, discharge_threshold: 200, reserve_soc: 10, mode: 'auto' }
+  }, stationData);
+  stations.push(newStation);
+  saveStations();
+  return newStation;
+}
+
+// ============ 澳洲时区列表 ============
+const AU_TIMEZONES = [
+  { value: 'Australia/Sydney', label: 'AEST/AEDT - Sydney, NSW', region: 'NSW' },
+  { value: 'Australia/Melbourne', label: 'AEST/AEDT - Melbourne, VIC', region: 'VIC' },
+  { value: 'Australia/Brisbane', label: 'AEST - Brisbane, QLD', region: 'QLD' },
+  { value: 'Australia/Adelaide', label: 'ACST/ACDT - Adelaide, SA', region: 'SA' },
+  { value: 'Australia/Perth', label: 'AWST - Perth, WA', region: 'WA' },
+  { value: 'Australia/Hobart', label: 'AEST/AEDT - Hobart, TAS', region: 'TAS' },
+  { value: 'Australia/Darwin', label: 'ACST - Darwin, NT', region: 'NT' }
+];
 
 // ============ 角色获取 ============
 
@@ -531,6 +660,9 @@ function assignStation(stationId, targetOpId) {
     station.lease_start = today.toISOString().split('T')[0];
     station.lease_end = endDate.toISOString().split('T')[0];
     station.annual_fee = 500000;
+    station.lease_status = 'Leased';
+  } else if (targetOpId === 'unassigned') {
+    station.lease_status = 'Idle';
   }
 
   saveStations();
