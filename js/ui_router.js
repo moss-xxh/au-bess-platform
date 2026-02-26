@@ -303,7 +303,11 @@ function renderSidebar(role, theme) {
         </a>`;
       }).join('')}
     </nav>
-    <div class="p-4 border-t border-white/10">
+    <div class="p-4 border-t border-white/10 space-y-1">
+      <a href="#" onclick="switchRole()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10 transition-colors">
+        <i data-lucide="repeat" class="w-4 h-4"></i>
+        ${getTrans('switch_role')}
+      </a>
       <a href="#" onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-colors">
         <i data-lucide="log-out" class="w-4 h-4"></i>
         ${getTrans('sign_out')}
@@ -805,6 +809,19 @@ function setManualMode(stationId, mode) {
 
   closeStrategyModal();
   showToast(`${station.name}: ${getTrans('mode_' + mode)}`, 'success');
+}
+
+// ============ 切换角色 ============
+
+function switchRole() {
+  if (typeof stopSimulator === 'function') stopSimulator();
+  if (typeof disposeChart === 'function') disposeChart();
+  // 清除登录状态但保留语言偏好和版本号
+  localStorage.removeItem('role');
+  localStorage.removeItem('isLoggedIn');
+  // 重置电站数据（不同角色看到的应是干净状态）
+  if (typeof resetStations === 'function') resetStations();
+  window.location.href = 'index.html';
 }
 
 // ============ 登出 ============
