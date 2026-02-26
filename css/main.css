@@ -30,14 +30,8 @@ body {
 .card-fade-in:nth-child(4) { animation-delay: 240ms; }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ============ Toast 动画 ============ */
@@ -61,8 +55,12 @@ body {
 
 /* ============ 极速加载条 ============ */
 .loading-bar {
-  width: 0%;
-  transition: width 0.8s ease-in-out;
+  animation: progress 0.8s ease-in-out forwards;
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
 }
 
 /* ============ 状态呼吸灯 ============ */
@@ -114,34 +112,26 @@ select option {
   background-size: 40px 40px;
 }
 
-/* ============ 响应式 ============ */
+/* ============ 响应式：移动端 ============ */
+@media (max-width: 768px) {
+  .sidebar-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 40;
+  }
 
-/* 移动端 Toast 适配 */
-@media (max-width: 640px) {
+  /* Toast 移动端适配 */
   .toast {
-    left: 50% !important;
-    right: auto !important;
     max-width: 90vw;
     font-size: 0.8rem;
   }
 }
 
-/* 移动端侧边栏抽屉 */
-@media (max-width: 768px) {
-  #sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 40;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* 大屏适配 */
+/* ============ 响应式：4K 大屏 ============ */
 @media (min-width: 2560px) {
   #station-container {
-    padding-left: 3rem;
-    padding-right: 3rem;
+    padding: 3rem 4rem;
   }
 }
